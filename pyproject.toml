@@ -1,0 +1,80 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "itask"
+version = "1.0.0"
+description = "A simple, elegant CLI tool for managing macOS launchd tasks"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [{name = "itask developers"}]
+keywords = ["macos", "launchd", "scheduler", "cli", "task-manager"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: System :: Systems Administration",
+    "Topic :: Utilities",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+requires-python = ">=3.8"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.11.0",
+]
+
+[project.scripts]
+itask = "itask_cli:main"
+
+[project.urls]
+Homepage = "https://github.com/thomas-huang/iTask"
+Repository = "https://github.com/thomas-huang/iTask"
+Issues = "https://github.com/thomas-huang/iTask/issues"
+Documentation = "https://github.com/thomas-huang/iTask#readme"
+
+[tool.setuptools.packages.find]
+include = ["lib*"]
+
+[tool.setuptools]
+py-modules = ["itask_cli"]
+
+[tool.setuptools.package-data]
+"*" = ["*.md", "*.txt"]
+
+# Remove pytest.ini content since we're consolidating here
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--tb=short",
+    "--cov=lib",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+]
+
+# Future: Can add other tool configurations here
+[tool.black]
+line-length = 88
+target-version = ['py38']
+
+[tool.isort]
+profile = "black"

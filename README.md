@@ -14,35 +14,69 @@ Built with **TDD (Test-Driven Development)** - 70 tests, 94% coverage.
 
 ## Installation
 
+### Modern Python Package Installation (Recommended)
+
+```bash
+pip install git+https://github.com/thomas-huang/iTask.git
+```
+
+OR
+
+
+```bash
+# Clone the repository
+git clone https://github.com/thomas-huang/iTask
+cd iTask
+
+# Install as a Python package
+pip install .
+
+# Or install in development mode (for contributors)
+pip install -e .
+
+# Or install with development dependencies
+pip install -e .[dev]
+```
+
+### Direct Installation from Source
+
 ```bash
 # Clone or download the repository
-cd itask
+cd iTask
 
 # Make executable
-chmod +x itask
+chmod +x itask_cli.py
 
 # Add to PATH (optional)
-sudo ln -s "$(pwd)/itask" /usr/local/bin/itask
+sudo ln -s "$(pwd)/itask_cli.py" /usr/local/bin/itask
 ```
+
+### Requirements
+
+- **Python 3.8+** (tested up to Python 3.13)
+- **macOS** (uses launchd - macOS native task scheduler)
+- **No external dependencies** (uses only Python standard library)
 
 ## Quick Start
 
 ```bash
 # Add a task that runs every hour
-./itask add ~/scripts/backup.sh --name backup --schedule "every 1h"
+itask add ~/scripts/backup.sh --name backup --schedule "every 1h"
 
 # Add a task that runs daily at 9 AM
-./itask add ~/scripts/report.py --schedule "daily at 09:00"
+itask add ~/scripts/report.py --schedule "daily at 09:00"
 
 # List all tasks
-./itask list
+itask list
 
 # Show task details
-./itask show backup
+itask show backup
 
 # Remove a task
-./itask remove backup
+itask remove backup
 ```
+
+**Note**: If you installed via pip, use `itask` directly. If using direct installation, use `./itask_cli.py`.
 
 ## Commands
 
@@ -192,13 +226,16 @@ Actual launchd plists are stored in: `~/Library/LaunchAgents/`
 ### Running Tests
 
 ```bash
-# Install dependencies
-pip3 install -r requirements.txt
+# Install in development mode with test dependencies
+pip install -e .[dev]
+
+# Or install test dependencies separately
+pip install -r requirements.dev.txt
 
 # Run all tests
 pytest
 
-# Run with coverage
+# Run with coverage (configured in pyproject.toml)
 pytest --cov=lib --cov-report=term-missing
 
 # Run specific test file
@@ -222,7 +259,10 @@ Test breakdown:
 
 ```
 itask/
-├── itask                      # Main CLI executable
+├── itask_cli.py               # Main CLI executable
+├── pyproject.toml            # Modern Python package configuration
+├── requirements.txt          # Runtime dependencies (empty - no external deps)
+├── requirements.dev.txt      # Development dependencies
 ├── lib/
 │   ├── __init__.py
 │   ├── config.py             # Configuration management
@@ -234,8 +274,7 @@ itask/
 │   ├── test_launchd.py
 │   ├── test_parser.py
 │   └── test_plist_generator.py
-├── requirements.txt
-├── pytest.ini
+├── pytest.ini               # Legacy pytest config (superseded by pyproject.toml)
 └── README.md
 ```
 

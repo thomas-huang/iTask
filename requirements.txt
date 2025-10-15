@@ -1,3 +1,5 @@
-pytest>=7.4.0
-pytest-cov>=4.1.0
-pytest-mock>=3.11.0
+# itask runtime dependencies
+# This package has no external runtime dependencies - uses only Python standard library
+
+# For development and testing, install with: pip install -e .[dev]
+# Or use requirements.dev.txt: pip install -r requirements.dev.txt
