@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "itask"
-version = "1.0.0"
+version = "1.0.1"
 description = "A simple, elegant CLI tool for managing macOS launchd tasks"
 readme = "README.md"
 license = {text = "MIT"}

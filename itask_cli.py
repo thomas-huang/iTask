@@ -57,25 +57,44 @@ class ITaskCLI:
             print(f"Error: {e}")
             return 1
 
-        # Copy script to itask scripts directory
-        dest_script = self.config.scripts_dir / script_path.name
-        try:
-            shutil.copy2(script_path, dest_script)
-            dest_script.chmod(0o755)  # Make executable
-        except Exception as e:
-            print(f"Error copying script: {e}")
-            return 1
+        # Handle script path based on --keep-original option
+        if args.keep_original:
+            # Use original script path, ensure it's executable
+            if not os.access(script_path, os.X_OK):
+                print(f"Warning: Script is not executable: {script_path}")
+                try:
+                    script_path.chmod(script_path.stat().st_mode | 0o755)
+                    print(f"Made script executable: {script_path}")
+                except Exception as e:
+                    print(f"Error: Cannot make script executable: {e}")
+                    return 1
+
+            final_script_path = str(script_path)
+            script_copied = False
+        else:
+            # Copy script to itask scripts directory (current behavior)
+            dest_script = self.config.scripts_dir / script_path.name
+            try:
+                shutil.copy2(script_path, dest_script)
+                dest_script.chmod(0o755)  # Make executable
+            except Exception as e:
+                print(f"Error copying script: {e}")
+                return 1
+
+            final_script_path = str(dest_script)
+            script_copied = True
 
         # Create task configuration
         task_config = TaskConfig(
             name=task_name,
-            script_path=str(dest_script),
+            script_path=final_script_path,
             schedule_type=schedule_info["type"],
             schedule=schedule_info["schedule"],
             enabled=True,
             working_directory=args.working_dir or str(Path.cwd()),
             log_stdout=str(self.config.logs_dir / f"{task_name}.log"),
-            log_stderr=str(self.config.logs_dir / f"{task_name}.err.log")
+            log_stderr=str(self.config.logs_dir / f"{task_name}.err.log"),
+            script_copied=script_copied
         )
 
         # Generate and save plist
@@ -88,7 +107,9 @@ class ITaskCLI:
             shutil.copy2(plist_path, backup_plist_path)
         except Exception as e:
             print(f"Error generating plist: {e}")
-            dest_script.unlink()  # Cleanup
+            # Cleanup copied script only if we copied it
+            if script_copied:
+                Path(final_script_path).unlink()
             return 1
 
         # Load into launchd
@@ -97,7 +118,8 @@ class ITaskCLI:
         except RuntimeError as e:
             print(f"Error loading task: {e}")
             # Cleanup
-            dest_script.unlink()
+            if script_copied:
+                Path(final_script_path).unlink()
             plist_path.unlink()
             return 1
 
@@ -108,13 +130,14 @@ class ITaskCLI:
             print(f"Error saving config: {e}")
             # Cleanup
             self.launchd.unload(str(plist_path))
-            dest_script.unlink()
+            if script_copied:
+                Path(final_script_path).unlink()
             plist_path.unlink()
             return 1
 
         print(f"✓ Task '{task_name}' added and loaded successfully")
         print(f"  Schedule: {args.schedule or schedule_str}")
-        print(f"  Script: {dest_script}")
+        print(f"  Script: {final_script_path}")
         print(f"  Logs: {self.config.logs_dir / task_name}.{{log,err.log}}")
         return 0
 
@@ -152,11 +175,14 @@ class ITaskCLI:
         if backup_plist.exists():
             backup_plist.unlink()
 
-        # Remove script (optional)
-        if not args.keep_script:
+        # Remove script (only if it was copied and --keep-script not specified)
+        script_was_copied = task.get("script_copied", True)  # Default to True for backward compatibility
+        if script_was_copied and not args.keep_script:
             script_path = Path(task["script_path"])
             if script_path.exists():
                 script_path.unlink()
+        elif not script_was_copied and not args.keep_script:
+            print(f"Note: Script was not copied to ~/.itask/scripts/, leaving original at {task['script_path']}")
 
         # Remove from config
         self.config.remove_task(task_name)
@@ -254,6 +280,8 @@ def main():
     add_parser.add_argument('--name', help='Task name (default: script filename)')
     add_parser.add_argument('--schedule', help='Schedule expression (e.g., "every 1h", "daily at 09:00")')
     add_parser.add_argument('--working-dir', help='Working directory for script')
+    add_parser.add_argument('--keep-original', action='store_true',
+                           help='Keep script in original location instead of copying to ~/.itask/scripts/')
 
     # Remove command
     remove_parser = subparsers.add_parser('remove', help='Remove a task')

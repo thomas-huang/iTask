@@ -3,7 +3,9 @@
     "allow": [
       "Bash(python3 -m pytest:*)",
       "Bash(mv:*)",
-      "Bash(pytest:*)"
+      "Bash(pytest:*)",
+      "Bash(chmod:*)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []

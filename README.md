@@ -2,7 +2,7 @@
 
 A simple, elegant CLI tool for managing macOS launchd tasks.
 
-Built with **TDD (Test-Driven Development)** - 70 tests, 94% coverage.
+Built with **TDD (Test-Driven Development)** - 77 tests, 95% coverage.
 
 ## Features
 
@@ -85,7 +85,7 @@ itask remove backup
 Add a new scheduled task.
 
 ```bash
-itask add <script> [--name NAME] [--schedule SCHEDULE] [--working-dir DIR]
+itask add <script> [--name NAME] [--schedule SCHEDULE] [--working-dir DIR] [--keep-original]
 ```
 
 **Examples:**
@@ -102,7 +102,25 @@ itask add ~/scripts/backup.sh \
 
 # Quick interval task
 itask add monitor.py --schedule "every 5m"
+
+# Keep script in original location (don't copy to ~/.itask/scripts/)
+itask add ~/projects/myapp/deploy.sh \
+  --name deployment \
+  --schedule "daily at 01:00" \
+  --keep-original
 ```
+
+**Options:**
+- `--name NAME`: Custom task name (defaults to script filename)
+- `--schedule SCHEDULE`: Schedule expression (interactive prompt if not provided)
+- `--working-dir DIR`: Working directory for script execution
+- `--keep-original`: Keep script in its original location instead of copying to `~/.itask/scripts/`
+
+**Script Management:**
+By default, itask copies your script to `~/.itask/scripts/` for centralized management. This prevents issues if you move or delete the original script. However, you can use `--keep-original` to:
+- Keep scripts in their original locations (useful for project-based scripts)
+- Maintain scripts within version control systems
+- Edit scripts in place without re-adding tasks
 
 ### `itask list`
 
@@ -245,14 +263,15 @@ pytest tests/test_config.py -v
 ### Test Results
 
 ```
-70 tests passed
-94% code coverage
+77 tests passed
+95% code coverage
 
 Test breakdown:
-- config.py: 16 tests, 92% coverage
+- config.py: 16 tests, 95% coverage
 - plist_generator.py: 13 tests, 100% coverage
 - parser.py: 25 tests, 96% coverage
 - launchd.py: 16 tests, 92% coverage
+- cli.py: 7 tests (new CLI functionality)
 ```
 
 ### Project Structure
@@ -326,8 +345,24 @@ launchctl list | grep itask
 # Make sure script is executable
 chmod +x ~/.itask/scripts/<script>
 
+# For tasks using --keep-original, check original script
+chmod +x /path/to/original/script
+
 # Check script path in task config
 itask show <taskname>
+```
+
+### Script moved or deleted
+
+For tasks created with `--keep-original`, if you move or delete the original script:
+
+```bash
+# Check current script path
+itask show <taskname>
+
+# Remove and re-add the task with new path
+itask remove <taskname> -y
+itask add /new/path/to/script --name <taskname> --schedule "..." --keep-original
 ```
 
 ### Remove stuck task
@@ -355,11 +390,12 @@ itask remove <taskname> -y
 
 ### Design Decisions
 
-1. **Copy scripts**: Avoids issues with moved/deleted files
-2. **JSON config**: Human-readable, version control friendly
-3. **Atomic writes**: Prevents corruption on crash
-4. **Backup plists**: Easy debugging and recovery
-5. **TDD approach**: 70 tests ensure reliability
+1. **Copy scripts by default**: Avoids issues with moved/deleted files
+2. **Optional `--keep-original`**: For users who prefer managing scripts in their original locations
+3. **JSON config**: Human-readable, version control friendly
+4. **Atomic writes**: Prevents corruption on crash
+5. **Backup plists**: Easy debugging and recovery
+6. **TDD approach**: 77 tests ensure reliability
 
 ## Contributing
 

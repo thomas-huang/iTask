@@ -24,6 +24,7 @@ class TaskConfig:
     log_stderr: Optional[str] = None
     keep_alive: bool = False
     run_at_load: bool = False
+    script_copied: bool = True  # Whether script was copied to ~/.itask/scripts/
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
     last_modified: str = field(default_factory=lambda: datetime.now().isoformat())
 
