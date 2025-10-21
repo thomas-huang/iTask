@@ -277,10 +277,10 @@ def main():
     # Add command
     add_parser = subparsers.add_parser('add', help='Add a new task')
     add_parser.add_argument('script', help='Path to script file')
-    add_parser.add_argument('--name', help='Task name (default: script filename)')
-    add_parser.add_argument('--schedule', help='Schedule expression (e.g., "every 1h", "daily at 09:00")')
-    add_parser.add_argument('--working-dir', help='Working directory for script')
-    add_parser.add_argument('--keep-original', action='store_true',
+    add_parser.add_argument('--name', '-n', help='Task name (default: script filename)')
+    add_parser.add_argument('--schedule', '-s', help='Schedule expression (e.g., "every 1h", "daily at 09:00")')
+    add_parser.add_argument('--working-dir', '-w', help='Working directory for script')
+    add_parser.add_argument('--keep-original', '-k', action='store_true',
                            help='Keep script in original location instead of copying to ~/.itask/scripts/')
 
     # Remove command

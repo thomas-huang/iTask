@@ -1,0 +1,98 @@
+#compdef itask
+
+_itask() {
+    local context state state_descr line
+    typeset -A opt_args
+
+    # 定义子命令
+    local -a subcommands
+    subcommands=(
+        'add:Add a new task'
+        'remove:Remove a task'
+        'list:List all tasks'
+        'show:Show task details'
+    )
+
+    # 第一个参数是子命令
+    if [[ $CURRENT -eq 2 ]]; then
+        _describe -t commands 'itask command' subcommands
+        return
+    fi
+
+    # 根据子命令处理后续参数
+    case $words[2] in
+        add)
+            _arguments \
+                '--name[Task name (default: script filename)]:name:' \
+                '-n[Task name (default: script filename)]:name:' \
+                '--schedule[Schedule expression]:schedule:' \
+                '-s[Schedule expression]:schedule:' \
+                '--working-dir[Working directory for script]:directory:_files -/' \
+                '-w[Working directory for script]:directory:_files -/' \
+                '--keep-original[Keep script in original location]' \
+                '-k[Keep script in original location]' \
+                ':script file:_files'
+            ;;
+        remove)
+            if [[ $CURRENT -eq 3 ]]; then
+                _itask_task_names
+            else
+                _arguments \
+                    '--yes[Skip confirmation]' \
+                    '-y[Skip confirmation]' \
+                    '--keep-script[Keep script file]'
+            fi
+            ;;
+        list)
+            _arguments \
+                '--verbose[Verbose output]' \
+                '-v[Verbose output]'
+            ;;
+        show)
+            if [[ $CURRENT -eq 3 ]]; then
+                _itask_task_names
+            fi
+            ;;
+        *)
+            _message "unknown command"
+            ;;
+    esac
+}
+
+_itask_task_names() {
+    local config_file="$HOME/.itask/config.json"
+    local -a task_names
+    
+    if [[ ! -f "$config_file" ]]; then
+        _message "config file not found: $config_file"
+        return 1
+    fi
+
+    # 方法1: 使用 jq (推荐)
+    if command -v jq >/dev/null 2>&1; then
+        task_names=(${(f)"$(jq -r '.tasks | keys[]' "$config_file" 2>/dev/null)"})
+        
+    # 方法2: 使用 Python (备用方案)
+    elif command -v python3 >/dev/null 2>&1; then
+        task_names=(${(f)"$(python3 -c "
+import json, sys
+try:
+    with open('$config_file', 'r') as f:
+        data = json.load(f)
+        tasks = data.get('tasks', {})
+        for task_name in tasks.keys():
+            print(task_name)
+except Exception as e:
+    sys.exit(1)
+" 2>/dev/null)"})
+    fi
+
+    if [[ ${#task_names} -eq 0 ]]; then
+        _message "no tasks found"
+        return 1
+    fi
+
+    _describe -t tasks 'available tasks' task_names
+}
+
+_itask "$@"
