@@ -10,6 +10,7 @@ Built with **TDD (Test-Driven Development)** - 77 tests, 95% coverage.
 - **Human-Readable Schedules**: Use expressions like `"every 1h"` or `"daily at 09:00"`
 - **Centralized Management**: All scripts and logs stored in `~/.itask/`
 - **Full launchd Integration**: Leverages macOS native task scheduling
+- **Zsh Completions**: Tab-complete commands, options, and task names
 - **Comprehensive Testing**: 94% code coverage with pytest
 
 ## Installation
@@ -85,7 +86,7 @@ itask remove backup
 Add a new scheduled task.
 
 ```bash
-itask add <script> [--name NAME] [--schedule SCHEDULE] [--working-dir DIR] [--keep-original]
+itask add <script> [--name NAME|-n NAME] [--schedule SCHEDULE|-s SCHEDULE] [--working-dir DIR|-w DIR] [--keep-original|-k]
 ```
 
 **Examples:**
@@ -105,16 +106,16 @@ itask add monitor.py --schedule "every 5m"
 
 # Keep script in original location (don't copy to ~/.itask/scripts/)
 itask add ~/projects/myapp/deploy.sh \
-  --name deployment \
-  --schedule "daily at 01:00" \
-  --keep-original
+  -n deployment \
+  -s "daily at 01:00" \
+  -k
 ```
 
 **Options:**
-- `--name NAME`: Custom task name (defaults to script filename)
-- `--schedule SCHEDULE`: Schedule expression (interactive prompt if not provided)
-- `--working-dir DIR`: Working directory for script execution
-- `--keep-original`: Keep script in its original location instead of copying to `~/.itask/scripts/`
+- `--name, -n NAME`: Custom task name (defaults to script filename)
+- `--schedule, -s SCHEDULE`: Schedule expression (interactive prompt if not provided)
+- `--working-dir, -w DIR`: Working directory for script execution
+- `--keep-original, -k`: Keep script in its original location instead of copying to `~/.itask/scripts/`
 
 **Script Management:**
 By default, itask copies your script to `~/.itask/scripts/` for centralized management. This prevents issues if you move or delete the original script. However, you can use `--keep-original` to:
@@ -241,6 +242,39 @@ Actual launchd plists are stored in: `~/Library/LaunchAgents/`
 
 ## Development
 
+### Zsh Completion
+
+Zsh completions are provided to auto-complete commands, options, and task names.
+
+Option A — Per-user install:
+
+```bash
+mkdir -p ~/.zsh/completions
+cp completions/_itask ~/.zsh/completions/_itask
+
+# Add to ~/.zshrc (if not already present)
+echo 'fpath+=("$HOME/.zsh/completions")' >> ~/.zshrc
+echo 'autoload -Uz compinit && compinit' >> ~/.zshrc
+
+# Reload shell
+exec zsh
+```
+
+Option B — System-wide (may require sudo):
+
+```bash
+# Common locations (one of these will exist depending on your setup)
+cp completions/_itask /usr/local/share/zsh/site-functions/_itask 2>/dev/null || \
+cp completions/_itask /opt/homebrew/share/zsh/site-functions/_itask
+
+# Then reload completion system
+autoload -Uz compinit && compinit
+```
+
+Notes:
+- Task name completion for `itask remove` and `itask show` uses `jq` if available, or falls back to Python 3.
+- After installation, try `itask <TAB>` and `itask add -<TAB>`.
+
 ### Running Tests
 
 ```bash
@@ -278,6 +312,8 @@ Test breakdown:
 
 ```
 itask/
+├── completions/
+│   └── _itask               # Zsh completion script
 ├── itask_cli.py               # Main CLI executable
 ├── pyproject.toml            # Modern Python package configuration
 ├── requirements.txt          # Runtime dependencies (empty - no external deps)
