@@ -239,3 +239,40 @@ class TestCLI:
         task_dict = task_config.to_dict()
         assert "script_copied" in task_dict
         assert task_dict["script_copied"] == False
+
+
+class TestVersion:
+    """Test version flag functionality"""
+
+    def test_version_flag_short(self, capsys):
+        """Test -v flag displays version"""
+        with pytest.raises(SystemExit) as exc_info:
+            with patch('sys.argv', ['itask', '-v']):
+                itask_cli.main()
+        assert exc_info.value.code == 0
+        captured = capsys.readouterr()
+        assert 'itask' in captured.out
+        assert itask_cli.__version__ in captured.out
+
+    def test_version_flag_long(self, capsys):
+        """Test --version flag displays version"""
+        with pytest.raises(SystemExit) as exc_info:
+            with patch('sys.argv', ['itask', '--version']):
+                itask_cli.main()
+        assert exc_info.value.code == 0
+        captured = capsys.readouterr()
+        assert 'itask' in captured.out
+        assert itask_cli.__version__ in captured.out
+
+    def test_version_attribute_exists(self):
+        """Test that __version__ attribute exists"""
+        assert hasattr(itask_cli, '__version__')
+        assert isinstance(itask_cli.__version__, str)
+        assert len(itask_cli.__version__) > 0
+
+    def test_version_format(self):
+        """Test that version is in expected format"""
+        version = itask_cli.__version__
+        if version != "unknown":
+            parts = version.split('.')
+            assert len(parts) >= 2, "Version should have at least major.minor"

@@ -11,6 +11,12 @@ import shutil
 import sys
 from pathlib import Path
 
+try:
+    from importlib.metadata import version
+    __version__ = version("itask")
+except Exception:
+    __version__ = "unknown"
+
 from lib.config import Config, TaskConfig
 from lib.parser import ScheduleParser
 from lib.plist_generator import PlistGenerator
@@ -271,6 +277,8 @@ def main():
         description='itask - macOS launchd task manager',
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
+    
+    parser.add_argument('-v', '--version', action='version', version=f'itask {__version__}')
 
     subparsers = parser.add_subparsers(dest='command', help='Commands')
 
