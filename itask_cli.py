@@ -275,10 +275,33 @@ def main():
     subparsers = parser.add_subparsers(dest='command', help='Commands')
 
     # Add command
-    add_parser = subparsers.add_parser('add', help='Add a new task')
+    add_parser = subparsers.add_parser('add', help='Add a new task',
+                                       formatter_class=argparse.RawTextHelpFormatter)
     add_parser.add_argument('script', help='Path to script file')
     add_parser.add_argument('--name', '-n', help='Task name (default: script filename)')
-    add_parser.add_argument('--schedule', '-s', help='Schedule expression (e.g., "every 1h", "daily at 09:00")')
+    add_parser.add_argument('--schedule', '-s', help='''Schedule expression for the task. If omitted, you'll be prompted interactively.
+
+Interval-based schedules (run at regular intervals):
+  "every 30s"    - Every 30 seconds
+  "every 5m"     - Every 5 minutes  
+  "every 2h"     - Every 2 hours
+  "every 1d"     - Every day
+
+Calendar-based schedules (run at specific times):
+  "daily at 09:00"           - Every day at 9 AM
+  "at 14:30"                 - Every day at 2:30 PM
+  "monday at 10:00"          - Every Monday at 10 AM
+  "mon-fri at 18:00"         - Weekdays (Mon-Fri) at 6 PM
+  "1st at 00:00"             - First day of each month at midnight
+
+Shortcuts:
+  "hourly"       - Every hour
+  "minutely"     - Every minute
+
+Examples:
+  itask add backup.sh -s "every 1h"
+  itask add report.py -s "daily at 09:00"
+  itask add cleanup.sh -s "mon-fri at 18:00"''')
     add_parser.add_argument('--working-dir', '-w', help='Working directory for script')
     add_parser.add_argument('--keep-original', '-k', action='store_true',
                            help='Keep script in original location instead of copying to ~/.itask/scripts/')
