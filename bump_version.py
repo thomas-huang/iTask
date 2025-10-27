@@ -113,15 +113,17 @@ def sync_init_py_version(new_version: str) -> None:
         return
     text = INIT_FILE.read_text(encoding="utf-8")
     # Replace __version__ = "..." if present; otherwise append it.
-    pattern = re.compile(r"(^|\n)(__version__\s*=\s*\")[^\"]*(\")", re.M)
-    if pattern.search(text):
-        text = pattern.sub(rf"\1__version__ = \"{new_version}\"", text)
+    # Use a function replacement to avoid backslash escaping issues.
+    pattern = re.compile(r'^(__(?:version)__\s*=\s*")([^"]*)(")', re.M)
+    m = pattern.search(text)
+    if m:
+        def repl(match: re.Match) -> str:
+            return f'{match.group(1)}{new_version}{match.group(3)}'
+        text = pattern.sub(repl, text, count=1)
     else:
-        if not text.endswith("\n\n"):
-            if not text.endswith("\n"):
-                text += "\n"
+        if not text.endswith("\n"):
             text += "\n"
-        text += f"__version__ = \"{new_version}\"\n"
+        text += f'__version__ = "{new_version}"\n'
     INIT_FILE.write_text(text, encoding="utf-8")
 
 
