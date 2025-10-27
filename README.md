@@ -442,6 +442,16 @@ This project was built with TDD. When contributing:
 3. Maintain >90% coverage
 4. Follow existing patterns
 
+## Versioning
+
+- Semantic Versioning (SemVer) is used: MAJOR.MINOR.PATCH.
+- The canonical source of truth for the version is in pyproject.toml under the [project] section.
+- To bump the version locally, use the helper script at the repository root:
+  - Patch: python bump_version.py
+  - Minor: python bump_version.py --part minor
+  - Major: python bump_version.py --part major
+- For automation on merge, configure your CI to run this script after merging to the default branch, then commit the changed files and optionally create a Git tag and/or Release.
+
 ## License
 
 MIT License
