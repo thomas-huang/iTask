@@ -1,3 +1,7 @@
 """itask - macOS launchd task manager"""
 
-__version__ = "1.0.2"
+try:
+    from importlib.metadata import version
+    __version__ = version("itask")
+except Exception:
+    __version__ = "unknown"
