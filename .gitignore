@@ -15,3 +15,7 @@ venv/
 *.swp
 *.swo
 *~
+
+.auto-coder/
+/actions/
+/output.txt
