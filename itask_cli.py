@@ -11,16 +11,11 @@ import shutil
 import sys
 from pathlib import Path
 
-try:
-    from importlib.metadata import version
-    __version__ = version("itask")
-except Exception:
-    __version__ = "unknown"
-
 from lib.config import Config, TaskConfig
 from lib.parser import ScheduleParser
 from lib.plist_generator import PlistGenerator
 from lib.launchd import LaunchdManager
+from lib.version import __version__
 
 
 class ITaskCLI:
@@ -270,6 +265,11 @@ class ITaskCLI:
 
         return 0
 
+    def show_version(self, args):
+        """Show CLI version"""
+        print(f"itask {__version__}")
+        return 0
+
 
 def main():
     """Main entry point"""
@@ -328,6 +328,9 @@ Examples:
     show_parser = subparsers.add_parser('show', help='Show task details')
     show_parser.add_argument('name', help='Task name')
 
+    # Version command
+    subparsers.add_parser('version', help='Show version')
+
     args = parser.parse_args()
 
     if not args.command:
@@ -345,6 +348,8 @@ Examples:
         return cli.list_tasks(args)
     elif args.command == 'show':
         return cli.show_task(args)
+    elif args.command == 'version':
+        return cli.show_version(args)
     else:
         parser.print_help()
         return 1

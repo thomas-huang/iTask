@@ -11,6 +11,7 @@ _itask() {
         'remove:Remove a task'
         'list:List all tasks'
         'show:Show task details'
+        'version:Show version'
     )
 
     # 第一个参数是子命令
@@ -52,6 +53,8 @@ _itask() {
             if [[ $CURRENT -eq 3 ]]; then
                 _itask_task_names
             fi
+            ;;
+        version)
             ;;
         *)
             _message "unknown command"

@@ -3,6 +3,7 @@
 import pytest
 import tempfile
 import os
+import re
 from pathlib import Path
 from unittest.mock import Mock, patch, mock_open
 import json
@@ -12,6 +13,28 @@ from lib.parser import ScheduleParser
 from lib.plist_generator import PlistGenerator
 from lib.launchd import LaunchdManager
 import itask_cli
+
+
+_VERSION_RE = re.compile(r'^\s*version\s*=\s*["\']([^"\']+)["\']\s*$')
+_PYPROJECT_PATH = Path(__file__).resolve().parents[1] / "pyproject.toml"
+
+
+def _read_pyproject_version():
+    if not _PYPROJECT_PATH.exists():
+        return None
+    lines = _PYPROJECT_PATH.read_text(encoding="utf-8").splitlines()
+    in_project = False
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("[") and stripped.endswith("]"):
+            in_project = stripped == "[project]"
+            continue
+        if not in_project:
+            continue
+        match = _VERSION_RE.match(line)
+        if match:
+            return match.group(1)
+    return None
 
 
 class TestCLI:
@@ -264,6 +287,15 @@ class TestVersion:
         assert 'itask' in captured.out
         assert itask_cli.__version__ in captured.out
 
+    def test_version_subcommand(self, capsys):
+        """Test version subcommand displays version"""
+        with patch('sys.argv', ['itask', 'version']):
+            exit_code = itask_cli.main()
+        assert exit_code == 0
+        captured = capsys.readouterr()
+        assert 'itask' in captured.out
+        assert itask_cli.__version__ in captured.out
+
     def test_version_attribute_exists(self):
         """Test that __version__ attribute exists"""
         assert hasattr(itask_cli, '__version__')
@@ -276,3 +308,10 @@ class TestVersion:
         if version != "unknown":
             parts = version.split('.')
             assert len(parts) >= 2, "Version should have at least major.minor"
+
+    def test_version_matches_pyproject(self):
+        """Test version matches pyproject.toml when available"""
+        pyproject_version = _read_pyproject_version()
+        if pyproject_version is None:
+            pytest.skip("pyproject.toml not available")
+        assert itask_cli.__version__ == pyproject_version

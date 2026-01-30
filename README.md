@@ -73,6 +73,9 @@ itask list
 # Show task details
 itask show backup
 
+# Show version
+itask version
+
 # Remove a task
 itask remove backup
 ```
@@ -162,6 +165,14 @@ Stderr Log: /Users/user/.itask/logs/backup.err.log
 Created: 2025-10-15T10:30:00
 Last Modified: 2025-10-15T10:30:00
 Status: Loaded
+```
+
+### `itask version`
+
+Show the CLI version.
+
+```bash
+itask version
 ```
 
 ### `itask remove`

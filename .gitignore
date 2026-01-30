@@ -17,5 +17,6 @@ venv/
 *~
 
 .auto-coder/
+.snow/
 /actions/
 /output.txt
